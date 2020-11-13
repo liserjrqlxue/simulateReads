@@ -24,13 +24,13 @@ var (
 	)
 	ref = flag.String(
 		"ref",
-		"",
-		"ref fasta",
+		"-",
+		"ref fasta file, default from stdin",
 	)
 	output = flag.String(
 		"output",
-		"",
-		"output file",
+		"-",
+		"output file,default to stdout",
 	)
 )
 
@@ -40,28 +40,39 @@ var (
 
 func main() {
 	flag.Parse()
-	var out = osUtil.Create(*output)
+
+	var in, out *os.File
+	if *ref == "-" {
+		in = os.Stdin
+	} else {
+		in = osUtil.Open(*ref)
+	}
+	if *output == "-" {
+		out = os.Stdout
+	} else {
+		out = osUtil.Create(*output)
+	}
+	defer simpleUtil.DeferClose(in)
 	defer simpleUtil.DeferClose(out)
-	var refF = osUtil.Open(*ref)
-	defer simpleUtil.DeferClose(refF)
-	var scanner = bufio.NewScanner(refF)
+
+	var scanner = bufio.NewScanner(in)
 	var prefix string
-	var seqbuffer string
+	var seqBuffer string
 	var offset int
 	for scanner.Scan() {
 		var line = scanner.Text()
 		if isHeader.MatchString(line) {
 			prefix = line[1:]
-			seqbuffer = ""
+			seqBuffer = ""
 			offset = 0
 		} else {
-			seqbuffer += line
-			var l = len(seqbuffer)
+			seqBuffer += line
+			var l = len(seqBuffer)
 			if l >= *length {
 				for i := 0; i+*length <= l; i += *slide {
-					printFQ(out, prefix, seqbuffer[i:i+*length], offset+i)
+					printFQ(out, prefix, seqBuffer[i:i+*length], offset+i)
 				}
-				seqbuffer = seqbuffer[l-*length+*slide:]
+				seqBuffer = seqBuffer[l-*length+*slide:]
 				offset += l - *length + *slide
 			}
 		}
