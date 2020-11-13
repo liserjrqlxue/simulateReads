@@ -70,7 +70,7 @@ func main() {
 			var l = len(seqBuffer)
 			if l >= *length {
 				for i := 0; i+*length <= l; i += *slide {
-					printFQ(out, prefix, seqBuffer[i:i+*length], offset+i)
+					printFQ(out, prefix, seqBuffer[i:i+*length], offset+i+1)
 				}
 				seqBuffer = seqBuffer[l-*length+*slide:]
 				offset += l - *length + *slide
