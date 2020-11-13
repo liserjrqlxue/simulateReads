@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
@@ -31,6 +32,11 @@ var (
 		"output",
 		"-",
 		"output file,default to stdout",
+	)
+	upper = flag.Bool(
+		"upper",
+		false,
+		"if must upper seq",
 	)
 )
 
@@ -66,7 +72,11 @@ func main() {
 			seqBuffer = ""
 			offset = 0
 		} else {
-			seqBuffer += line
+			if *upper {
+				seqBuffer += strings.ToUpper(line)
+			} else {
+				seqBuffer += line
+			}
 			var l = len(seqBuffer)
 			if l >= *length {
 				for i := 0; i+*length <= l; i += *slide {
